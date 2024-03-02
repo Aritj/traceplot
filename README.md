@@ -3,7 +3,9 @@ This is a small project I worked on for a weekend.
 
 This is planned to demonstrate the viability (or lack thereof) of using traceroute and geolocation of public IPs to track the flow of data across the internet.
 
-The IP Geolocation service used is [ipgeolocation](https://ipgeolocation.io/).
+The IP Geolocation service used is [ipgeolocation](https://ipgeolocation.io/). 
+> [!NOTE]
+> The distance between two geolocated IPs is calculated as a straight line between both locations multiplied by a roughly "guess-timated" scalar value of 20%, to mimic the real-world pathways of internet data, which often deviate significantly from straight lines.
 
 ## Running Traceplot
 Using FQDN:
