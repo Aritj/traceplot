@@ -147,9 +147,10 @@ def traceroute(ip: str) -> Dict[ipaddress.IPv4Address, List[int]]:
 
     if os_name == "windows":
         hop_dict = parse_windows_traceroute(traceroute_lines)
+    
     # TODO: implement parsing for Linux/Mac
-
-    return hop_dict
+    print(f"{os_name} trace route parsing not implemented.")
+    sys.exit()
 
 
 def get_coordinates(API_KEY: str, ip: ipaddress.IPv4Address) -> Tuple[float, float]:
