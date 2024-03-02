@@ -18,7 +18,6 @@ Using IP:
 ```
 ### Terminal output
 ```
-Useful information that users should know, even when skimming content.
 Public IP (starting point): [WAN_IP]
 1 : 192.168.0.1 skipped - can't geolocate RFC1918 IPs
 2 : 10.116.33.1 skipped - can't geolocate RFC1918 IPs
