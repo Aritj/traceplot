@@ -1,5 +1,9 @@
 # What is this project?
-This is a small project I worked on for a weekend. This is planned to demonstrate the viability (or lack thereof) of using traceroute and geolocation of public IPs to track the flow of data across the internet.
+This is a small project I worked on for a weekend. 
+
+This is planned to demonstrate the viability (or lack thereof) of using traceroute and geolocation of public IPs to track the flow of data across the internet.
+
+The IP Geolocation service used is [ipgeolocation](https://ipgeolocation.io/).
 
 ## Running Traceplot
 Using FQDN:
