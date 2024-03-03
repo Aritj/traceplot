@@ -24,14 +24,14 @@ Using IP:
 ```
 ### Terminal output
 ```
-Public IP (starting point): [WAN_IP]
-1 : 192.168.0.1 skipped - can't geolocate RFC1918 IPs
-2 : 10.116.33.1 skipped - can't geolocate RFC1918 IPs
-3 : [WAN_IP]         - 14.3 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:  14.3ms)
-4 : 176.22.62.134    - 19.3 ms -> 83.88.12.12      (Δkm:     1.5km | Δms:   5.0ms)
-5 : 83.88.12.12      - 12.7 ms -> 128.76.59.115    (Δkm:   182.5km | Δms:  -6.7ms)
-6 : 128.76.59.115    - 22.3 ms -> 51.10.14.22      (Δkm:  1139.8km | Δms:   9.7ms)
-7 : 51.10.14.22      - 33.3 ms -> 52.236.166.178   (Δkm:   432.3km | Δms:  11.0ms)
+Public IP (geolocation starting point): [Public_IP] | Behind NAT
+1 : 192.168.0.50     - 4.0  ms -> 192.168.0.1      (Δkm:   N/A  km | Δms:   4.0ms) - can't geolocate private IPs.
+2 : 192.168.0.1      - 20.0 ms -> 10.116.33.1      (Δkm:   N/A  km | Δms:  16.0ms) - can't geolocate private IPs.
+3 : 10.116.33.1      - 13.7 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:  -6.3ms)
+4 : 176.22.62.134    - 14.0 ms -> 83.88.12.12      (Δkm:     1.5km | Δms:   0.3ms)
+5 : 83.88.12.12      - 14.0 ms -> 128.76.59.115    (Δkm:   182.5km | Δms:   0.0ms)
+6 : 128.76.59.115    - 14.0 ms -> 51.10.14.22      (Δkm:  1139.8km | Δms:   0.0ms)
+7 : 51.10.14.22      - 30.3 ms -> 52.236.166.178   (Δkm:   432.3km | Δms:  16.3ms)
 Total distance: 1951.33 km
 ```
 ### Traceroute plot
@@ -46,10 +46,10 @@ Total distance: 1951.33 km
 ```
 ### Terminal output
 ```
-Public IP (starting point): [WAN_IP]
-1 : 192.168.0.1 skipped - can't geolocate RFC1918 IPs
-2 : 10.116.33.1 skipped - can't geolocate RFC1918 IPs
-3 : [WAN_IP]         - 18.0 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:  18.0ms)
+Public IP (geolocation starting point): [Public_IP] | Behind NAT
+1 : 192.168.0.50     - 4.7  ms -> 192.168.0.1      (Δkm:   N/A  km | Δms:   4.7ms) - skipped - can't geolocate RFC1918 IPs
+2 : 192.168.0.1      - 16.3 ms -> 10.116.33.1      (Δkm:   N/A  km | Δms:  11.7ms) - skipped - can't geolocate RFC1918 IPs
+3 : 10.116.33.1      - 18.0 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:   1.7ms)
 4 : 176.22.62.134    - 18.3 ms -> 83.88.3.113      (Δkm:   159.0km | Δms:   0.3ms)
 5 : 83.88.3.113      - 15.0 ms -> 176.22.253.118   (Δkm:    36.6km | Δms:  -3.3ms)
 6 : 176.22.253.118   - 61.0 ms -> 193.34.104.38    (Δkm:  1574.0km | Δms:  46.0ms)
@@ -68,31 +68,17 @@ Total distance: 1964.84 km
 ```
 ### Terminal output
 ```
-Public IP (starting point): [WAN_IP]
-1 : 192.168.0.1 skipped - can't geolocate RFC1918 IPs
-2 : 10.116.33.1 skipped - can't geolocate RFC1918 IPs
-3 : [WAN_IP]         - 14.0 ms -> 176.22.62.132    (Δkm:   195.3km | Δms:  14.0ms)
-4 : 176.22.62.132    - 14.7 ms -> 83.88.12.12      (Δkm:     1.5km | Δms:   0.7ms)
-5 : 83.88.12.12      - 16.5 ms -> 128.76.59.115    (Δkm:   182.5km | Δms:   1.8ms)
-6 : 128.76.59.115    - 20.3 ms -> 51.10.14.18      (Δkm:  1139.8km | Δms:   3.8ms)
-7 : 51.10.14.18      - 269.5ms -> 104.44.33.99     (Δkm:  9219.1km | Δms: 249.2ms)
-8 : 104.44.33.99     - 266.5ms -> 104.44.30.117    (Δkm:  9739.1km | Δms:  -3.0ms)
-9 : 104.44.30.117    - 268.0ms -> 104.44.29.184    (Δkm: 10764.1km | Δms:   1.5ms)
-10: 104.44.29.184    - 266.0ms -> 104.44.28.143    (Δkm:     0.0km | Δms:  -2.0ms)
-11: 104.44.28.143    - 266.0ms -> 104.44.30.48     (Δkm:     0.0km | Δms:   0.0ms)
-12: 104.44.30.48     - 267.5ms -> 104.44.30.123    (Δkm:     0.0km | Δms:   1.5ms)
-13: 104.44.30.123    - 279.0ms -> 104.44.29.58     (Δkm: 12030.5km | Δms:  11.5ms)
-14: 104.44.29.58     - 268.5ms -> 104.44.28.173    (Δkm:  8126.1km | Δms: -10.5ms)
-15: 104.44.28.173    - 267.0ms -> 104.44.17.64     (Δkm:     0.0km | Δms:  -1.5ms)
-16: 104.44.17.64     - 267.0ms -> 104.44.7.18      (Δkm: 16394.6km | Δms:   0.0ms)
-17: 104.44.7.18      - 282.0ms -> 104.44.19.141    (Δkm: 21751.5km | Δms:  15.0ms)
-18: 104.44.19.141    - 266.0ms -> 104.44.19.148    (Δkm:     0.0km | Δms: -16.0ms)
-19: 104.44.19.148    - 267.0ms -> 104.44.7.143     (Δkm:  3951.3km | Δms:   1.0ms)
-20: 104.44.7.143     - 271.5ms -> 104.44.11.114    (Δkm:     0.0km | Δms:   4.5ms)
-21: 104.44.11.114    - 269.0ms -> 20.70.246.20     (Δkm:     5.8km | Δms:  -2.5ms)
-Total distance: 93501.01 km
+Public IP (geolocation starting point): [Public_IP] | Behind NAT
+1 : 192.168.0.50     - 4.0  ms -> 192.168.0.1      (Δkm:   N/A  km | Δms:   4.0ms) - can't geolocate private IPs.
+2 : 192.168.0.1      - 20.3 ms -> 10.116.33.1      (Δkm:   N/A  km | Δms:  16.3ms) - can't geolocate private IPs.
+3 : 10.116.33.1      - 13.0 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:  -7.3ms)
+4 : 176.22.62.134    - 12.7 ms -> 83.88.12.15      (Δkm:     1.5km | Δms:  -0.3ms)
+5 : 83.88.12.15      - 13.7 ms -> 128.76.59.115    (Δkm:   182.5km | Δms:   1.0ms)
+6 : 128.76.59.115    - 16.0 ms -> 51.10.14.22      (Δkm:  1139.8km | Δms:   2.3ms)
+7 : 51.10.14.22      - 110.7ms -> 20.231.239.246   (Δkm:  7124.3km | Δms:  94.7ms)
+Total distance: 8643.31 km
 ```
 ### Traceroute plot
-![plot_5](https://github.com/Aritj/traceplotter/assets/69643316/5bf46d36-a574-4dc6-a482-fc66d1a49871)
+![plot_7](https://github.com/Aritj/traceplotter/assets/69643316/7d017756-fb63-46d7-ae20-0e8ac392fd76)
 ### Geolocation plot
-![plot_6](https://github.com/Aritj/traceplotter/assets/69643316/966dfd17-e738-47f2-82bf-1388165ef985)
+![plot_8](https://github.com/Aritj/traceplotter/assets/69643316/c24ebfa2-54f3-4a3d-bb43-64a275d10a03)
