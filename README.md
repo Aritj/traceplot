@@ -26,18 +26,19 @@ Using IP:
 ```
 Public IP (geolocation starting point): [Public_IP] | Behind NAT
 1 : 192.168.0.50     - 4.0  ms -> 192.168.0.1      (Δkm:   N/A  km | Δms:   4.0ms) - can't geolocate private IPs.
-2 : 192.168.0.1      - 20.0 ms -> 10.116.33.1      (Δkm:   N/A  km | Δms:  16.0ms) - can't geolocate private IPs.
-3 : 10.116.33.1      - 13.7 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:  -6.3ms)
-4 : 176.22.62.134    - 14.0 ms -> 83.88.12.12      (Δkm:     1.5km | Δms:   0.3ms)
-5 : 83.88.12.12      - 14.0 ms -> 128.76.59.115    (Δkm:   182.5km | Δms:   0.0ms)
-6 : 128.76.59.115    - 14.0 ms -> 51.10.14.22      (Δkm:  1139.8km | Δms:   0.0ms)
-7 : 51.10.14.22      - 30.3 ms -> 52.236.166.178   (Δkm:   432.3km | Δms:  16.3ms)
+2 : 192.168.0.1      - 19.3 ms -> 10.116.33.1      (Δkm:   N/A  km | Δms:  15.3ms) - can't geolocate private IPs.
+3 : 10.116.33.1      - 11.3 ms -> 176.22.62.134    (Δkm:   195.3km | Δms:  -8.0ms)
+4 : 176.22.62.134    - 13.3 ms -> 83.88.12.12      (Δkm:     1.5km | Δms:   2.0ms)
+5 : 83.88.12.12      - 13.3 ms -> 128.76.59.115    (Δkm:   182.5km | Δms:   0.0ms)
+6 : 128.76.59.115    - 17.5 ms -> 51.10.14.22      (Δkm:  1139.8km | Δms:   4.2ms)
+7 : 51.10.14.22      - 28.7 ms -> 52.236.166.178   (Δkm:   432.3km | Δms:  11.2ms)
 Total distance: 1951.33 km
 ```
 ### Traceroute plot
-![plot_1](https://github.com/Aritj/traceplotter/assets/69643316/99a151cc-ae73-4dec-8590-173998dc0e38)
+![plot_9](https://github.com/Aritj/traceplotter/assets/69643316/06a56e6d-1d15-42e7-816e-9395268e32ee)
 ### Geolocation plot
-![plot_2](https://github.com/Aritj/traceplotter/assets/69643316/6490498c-38d1-456f-afc2-0806e6365d14)
+![plot_10](https://github.com/Aritj/traceplotter/assets/69643316/b1e1047b-2965-4d09-9663-fbacf2078481)
+
 
 ## Example output 2 (ns0.internet.fo):
 ### Terminal input
