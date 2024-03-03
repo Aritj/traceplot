@@ -146,8 +146,8 @@ def traceroute(ip: str) -> Dict[ipaddress.IPv4Address, List[int]]:
         return hop_dict
 
     if os_name == "windows":
-        hop_dict = parse_windows_traceroute(traceroute_lines)
-    
+        return parse_windows_traceroute(traceroute_lines)
+
     # TODO: implement parsing for Linux/Mac
     print(f"{os_name} trace route parsing not implemented.")
     sys.exit()
@@ -343,42 +343,51 @@ def main(target: str) -> None:
         print("Invalid target IP or domain.")
         return
 
-    public_ip = get_public_ip()
+    host_ip: ipaddress.IPv4Address = ipaddress.IPv4Address(
+        socket.gethostbyname(socket.gethostname())
+    )
+    public_ip: ipaddress.IPv4Address = get_public_ip()
     public_ip_coordinates: tuple[float, float] = get_coordinates(API_KEY, public_ip)
 
-    print(f"Public IP (starting point): {public_ip}")
-    hop_coords: OrderedDict[ipaddress.IPv4Address, tuple[float, float]] = OrderedDict(
-        {public_ip: public_ip_coordinates}
+    if host_ip != public_ip:
+        print(f"Public IP (geolocation starting point): {public_ip} | Behind NAT")
+    else:
+        print(f"Public IP (geolocation starting point): {public_ip}")
+
+    traceroute_hops: dict[ipaddress.IPv4Address, list[int]] = traceroute(target)
+    public_hop_coords: OrderedDict[ipaddress.IPv4Address, tuple[float, float]] = (
+        OrderedDict({public_ip: public_ip_coordinates})
     )
 
-    hops: dict[ipaddress.IPv4Address, list[int]] = traceroute(target)
     total_distance: int = 0
-
     prev_latency: float = 0.0
-    prev_hop: ipaddress.IPv4Address = public_ip
-    for i, hop in enumerate(hops, start=1):
-        if hop.is_private:
-            print(f"{i:<2}: {hop} skipped - can't geolocate RFC1918 IPs")
-            continue
+    prev_hop: ipaddress.IPv4Address = host_ip
+    prev_coords = public_ip_coordinates
+    for i, hop in enumerate(traceroute_hops, start=1):
+        avg_latency = avg(traceroute_hops[hop])
 
-        try:
-            coords = get_coordinates(API_KEY, hop)
-            distance = calculate_distance(hop_coords.get(prev_hop), coords)
-            avg_latency = avg(hops[hop])
-            total_distance += distance
+        if hop.is_private:
+            print(
+                f"{i:<2}: {str(prev_hop):<16} - {round(avg_latency, 1):<5}ms -> {str(hop):<16} (Δkm: {'N/A':^7}km | Δms: {round(avg_latency - prev_latency, 1):>5}ms) - can't geolocate private IPs."
+            )
+
+        if hop.is_global:
+            hop_coords = get_coordinates(API_KEY, hop)
+            distance = calculate_distance(prev_coords, hop_coords)
             print(
                 f"{i:<2}: {str(prev_hop):<16} - {round(avg_latency, 1):<5}ms -> {str(hop):<16} (Δkm: {round(distance, 1):>7}km | Δms: {round(avg_latency - prev_latency, 1):>5}ms)"
             )
-            hop_coords.update({hop: coords})
-            prev_hop = hop
-            prev_latency = avg_latency
-        except Exception as e:
-            print(f"Error getting data for {hop}: {e}")
+            public_hop_coords.update({hop: hop_coords})
+            total_distance += distance
+            prev_coords = hop_coords
+
+        prev_latency = avg_latency
+        prev_hop = hop
 
     print(f"Total distance: {round(total_distance, 2)} km")
 
-    plot_network(hops)
-    plot_public_ips(hop_coords)
+    plot_network(traceroute_hops)
+    plot_public_ips(public_hop_coords)
 
 
 if __name__ == "__main__":
