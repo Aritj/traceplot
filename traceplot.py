@@ -114,6 +114,32 @@ def parse_windows_traceroute(
 
     return traceroute_dict
 
+def parse_darwin_traceroute(
+    traceroute_output: List[str],
+) -> OrderedDict[ipaddress.IPv4Address, List[int]]:
+    """Parse MacOS (Darwin) traceroute output into a dictionary mapping IP addresses to latencies.
+
+    Args:
+        traceroute_output (List[str]): The output from the traceroute command.
+
+    Returns:
+        OrderedDict: Mapping from IP addresses to latency lists.
+    """
+    pattern = re.compile(r"^\s*(\d+)\s+([\d\.]+)\s+(\d+\.\d+|\*)\s+ms\s+(\d+\.\d+|\*)\s+ms\s+(\d+\.\d+|\*)\s+ms")
+    traceroute_dict: OrderedDict[ipaddress.IPv4Address, List[int]] = OrderedDict()
+
+    for line in traceroute_output:
+        match = pattern.match(line)
+
+        if not match:
+            continue  # Skip lines that do not match the pattern
+
+        _, ip, lat1, lat2, lat3 = match.groups()
+        traceroute_dict[ipaddress.IPv4Address(ip)] = [
+            float(lat) for lat in [lat1, lat2, lat3] if lat != "*"
+        ]
+
+    return traceroute_dict
 
 def traceroute(ip: str) -> Dict[ipaddress.IPv4Address, List[int]]:
     """Perform a traceroute to the specified IP address and return the results.
@@ -124,17 +150,17 @@ def traceroute(ip: str) -> Dict[ipaddress.IPv4Address, List[int]]:
     Returns:
         dict: A dictionary mapping from IP addresses to latency lists.
     """
+    os_traceroute_dict = {
+        "windows": ["tracert", "-d", "-w", "1", ip],
+        "darwin": ["traceroute", "-I", "-n", "-w1", ip]
+    }
+
     hop_dict: Dict[ipaddress.IPv4Address, List[int]] = {}
     os_name: str = platform.system().lower()
-    traceroute_command = (
-        ["tracert", "-d", "-w", "1", ip]
-        if os_name == "windows"
-        else ["traceroute", "-n", "-w1", ip]
-    )
 
     try:
         traceroute_output = subprocess.run(
-            traceroute_command,
+            os_traceroute_dict[os_name],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -147,6 +173,9 @@ def traceroute(ip: str) -> Dict[ipaddress.IPv4Address, List[int]]:
 
     if os_name == "windows":
         return parse_windows_traceroute(traceroute_lines)
+    
+    if os_name == "darwin":
+        return parse_darwin_traceroute(traceroute_lines)
 
     # TODO: implement parsing for Linux/Mac
     print(f"{os_name} trace route parsing not implemented.")
