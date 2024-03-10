@@ -46,7 +46,7 @@ def avg(input_list: list[float]) -> float:
     return sum(input_list) / len(input_list)
 
 
-def lookup_ip(fqdn: str) -> Optional[str]:
+def lookup_ip(fqdn: str) -> Optional[ipaddress.IPv4Address]:
     """Look up the IP address for a fully qualified domain name (FQDN).
 
     Args:
@@ -56,7 +56,7 @@ def lookup_ip(fqdn: str) -> Optional[str]:
         Optional[str]: The IP address or None if an error occurs.
     """
     try:
-        return socket.gethostbyname(fqdn)
+        return ipaddress.IPv4Address(socket.gethostbyname(fqdn))
     except socket.error:
         return None
 
@@ -182,8 +182,8 @@ def traceroute(ip: str) -> Dict[ipaddress.IPv4Address, List[int]]:
     sys.exit()
 
 
-def get_coordinates(API_KEY: str, ip: ipaddress.IPv4Address) -> Tuple[float, float]:
-    """Get geographical coordinates for an IP address using an external API.
+def query_geolocation_info(API_KEY: str, ip: ipaddress.IPv4Address) -> Optional[Tuple[float, float]]:
+    """Query information about an IP address using an external API.
 
     Args:
         API_KEY (str): The API key for the IP geolocation service.
@@ -192,11 +192,24 @@ def get_coordinates(API_KEY: str, ip: ipaddress.IPv4Address) -> Tuple[float, flo
     Returns:
         tuple: A tuple containing the latitude and longitude.
     """
-    response = requests.get(
-        f"https://api.ipgeolocation.io/ipgeo?apiKey={API_KEY}&ip={str(ip)}"
-    ).json()
-
-    return round(float(response["latitude"]), 2), round(float(response["longitude"]), 2)
+    try:
+        return requests.get(
+            f"https://api.ipgeolocation.io/ipgeo?apiKey={API_KEY}&ip={str(ip)}"
+        ).json()
+    except Exception as e:
+        return None
+    
+def get_coordinates(ipgeolocation_response: dict) -> Tuple[float, float]:
+    """Returns the latitude and longitude as float values in a tuple
+    
+    Args:
+        ipgeolocation_response (dict): Response from a api.ipgeolocation.io query.
+    
+    Returns:
+        tuple: A tuple containing the latitude and longitude.
+    """
+    return (float(ipgeolocation_response.get("latitude")), 
+            float(ipgeolocation_response.get("longitude")))
 
 
 def calculate_distance(
@@ -230,7 +243,7 @@ def calculate_distance(
 
 
 def plot_public_ips(
-    hop_coords: Dict[ipaddress.IPv4Address, Tuple[float, float]]
+    hop_info: Dict[ipaddress.IPv4Address, Tuple[float, float]]
 ) -> None:
     """Plot public IP addresses on a world map.
 
@@ -239,11 +252,10 @@ def plot_public_ips(
     """
     projection = ccrs.PlateCarree()
     plt.figure(figsize=(15, 10))
-    ax = plt.axes(projection=projection)
+    ax: ccrs.mpl.geoaxes.GeoAxes = plt.axes(projection=projection)
     ax.coastlines()
-
     # Determine the map's extent
-    lats, lons = zip(*hop_coords.values())
+    lats, lons = zip(*[(float(hop_info[ip]['latitude']), float(hop_info[ip]['longitude'])) for ip in hop_info])
     buffer = 10  # Add a buffer to the edges of the map
     ax.set_extent(
         [
@@ -257,12 +269,12 @@ def plot_public_ips(
 
     # Plot hops with unique colors
     cmap = plt.get_cmap("viridis")
-    for i, (hop, (lat, lon)) in enumerate(hop_coords.items()):
+    for i, hop in enumerate(hop_info):
         ax.plot(
-            lon,
-            lat,
+            float(hop_info[hop]['longitude']),
+            float(hop_info[hop]['latitude']),
             "o",
-            color=cmap(i / len(hop_coords)),
+            color=cmap(i / len(hop_info)),
             markersize=10,
             transform=ccrs.Geodetic(),
             label=f"Hop {i + 1}",
@@ -270,19 +282,19 @@ def plot_public_ips(
 
     # Connect hops with lines
     prev_hop = None
-    for hop, (lat, lon) in hop_coords.items():
+    for hop in hop_info:
         if prev_hop:
             prev_lat, prev_lon = prev_hop
             ax.plot(
-                [prev_lon, lon],
-                [prev_lat, lat],
+                [prev_lon, float(hop_info[hop]['longitude'])],
+                [prev_lat, float(hop_info[hop]['latitude'])],
                 "-",
                 color="black",
                 transform=ccrs.Geodetic(),
             )
-        prev_hop = (lat, lon)
+        prev_hop = (float(hop_info[hop]['latitude']), float(hop_info[hop]['longitude']))
 
-    ax.legend(hop_coords.keys())
+    ax.legend([f"{i+1}: {str(hop):<12} ({hop_info[hop]['country_code2']} - {hop_info[hop]['isp']})" for i, hop in enumerate(hop_info.keys())])
     plt.title("Traceroute Hops (source: ipgeolocation.io)")
     plt.show()
 
@@ -364,19 +376,21 @@ def main(target: str) -> None:
     """
     config = load_config()
     API_KEY = config.get("API_KEY")
-    if not API_KEY:
+    if not config.get("API_KEY"):
         print("API key not found in config.json.")
         sys.exit()
     target_ip = lookup_ip(target) if not target.replace(".", "").isdigit() else target
     if not target_ip:
         print("Invalid target IP or domain.")
         return
+    
+    target
 
     host_ip: ipaddress.IPv4Address = ipaddress.IPv4Address(
         socket.gethostbyname(socket.gethostname())
     )
     public_ip: ipaddress.IPv4Address = get_public_ip()
-    public_ip_coordinates: tuple[float, float] = get_coordinates(API_KEY, public_ip)
+    public_ip_geolocation_info: tuple[float, float] = query_geolocation_info(API_KEY, public_ip)
 
     if host_ip != public_ip:
         print(f"Public IP (geolocation starting point): {public_ip} | Behind NAT")
@@ -384,14 +398,18 @@ def main(target: str) -> None:
         print(f"Public IP (geolocation starting point): {public_ip}")
 
     traceroute_hops: dict[ipaddress.IPv4Address, list[int]] = traceroute(target)
-    public_hop_coords: OrderedDict[ipaddress.IPv4Address, tuple[float, float]] = (
-        OrderedDict({public_ip: public_ip_coordinates})
+    # If the target IP doesn't reply to trace route
+    if not traceroute_hops.get(target_ip):
+        traceroute_hops.update({target_ip: get_coordinates(public_ip_geolocation_info)})
+
+    public_hop_geolocation_info: OrderedDict[ipaddress.IPv4Address, tuple[float, float]] = (
+        OrderedDict({public_ip: public_ip_geolocation_info})
     )
 
     total_distance: int = 0
     prev_latency: float = 0.0
     prev_hop: ipaddress.IPv4Address = host_ip
-    prev_coords = public_ip_coordinates
+    prev_coords = get_coordinates(public_ip_geolocation_info)
     for i, hop in enumerate(traceroute_hops, start=1):
         avg_latency = avg(traceroute_hops[hop])
 
@@ -401,12 +419,14 @@ def main(target: str) -> None:
             )
 
         if hop.is_global:
-            hop_coords = get_coordinates(API_KEY, hop)
+            hop_geolocation_info = query_geolocation_info(API_KEY, hop)
+            hop_coords = get_coordinates(hop_geolocation_info)
             distance = calculate_distance(prev_coords, hop_coords)
+            delta_latency = avg_latency - prev_latency
             print(
-                f"{i:<2}: {str(prev_hop):<16} - {round(avg_latency, 1):<5}ms -> {str(hop):<16} (Δkm: {round(distance, 1):>7}km | Δms: {round(avg_latency - prev_latency, 1):>5}ms)"
+                f"{i:<2}: {str(prev_hop):<16} - {round(avg_latency, 1):<5}ms -> {str(hop):<16} (Δkm: {round(distance, 1):>7}km | Δms: {round(delta_latency, 1):>5}ms)"
             )
-            public_hop_coords.update({hop: hop_coords})
+            public_hop_geolocation_info.update({hop: hop_geolocation_info})
             total_distance += distance
             prev_coords = hop_coords
 
@@ -414,9 +434,10 @@ def main(target: str) -> None:
         prev_hop = hop
 
     print(f"Total distance: {round(total_distance, 2)} km")
+    print(f"Total latency: {round(prev_latency, 1)} ms")
 
     plot_network(traceroute_hops)
-    plot_public_ips(public_hop_coords)
+    plot_public_ips(public_hop_geolocation_info)
 
 
 if __name__ == "__main__":
