@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import networkx as nx  # Import NetworkX for plotting network graphs
 
+
 def plot_network(trace: models.Traceroute) -> None:
     """Plot a network graph of traceroute hops.
 
@@ -12,7 +13,7 @@ def plot_network(trace: models.Traceroute) -> None:
     # Create a new directed graph
     G = nx.DiGraph()
     hops = [f"{hop.fqdn} ({hop.ip_addr})" for hop in trace.hops]
-    
+
     # Add nodes with the hop number as the node label
     for i, hop in enumerate(hops, start=1):
         G.add_node(i, label=str(hop))
