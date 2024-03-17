@@ -1,9 +1,10 @@
 # What is this project?
-This is a small project I worked on for a weekend. 
+This project aims to demonstrate the viability (or lack thereof) of using traceroute and geolocation of public IPs to track the flow of data across the internet.
 
-This is planned to demonstrate the viability (or lack thereof) of using traceroute and geolocation of public IPs to track the flow of data across the internet.
+It is part of a student project for the Technical University of Denmark (DTU) for calculating the energy efficiency of networks, where some models require information about the network path.
 
-The IP Geolocation service used is [ipgeolocation](https://ipgeolocation.io/). 
+The IP Geolocation service used is [ipwho](https://ipwho.io). 
+
 > [!NOTE]
 > The distance between two geolocated IPs is calculated as a straight line between both locations multiplied by a roughly "guess-timated" scalar value of 20%, to mimic the real-world pathways of internet data, which often deviate significantly from straight lines.
 
