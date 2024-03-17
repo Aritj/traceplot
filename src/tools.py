@@ -2,7 +2,7 @@ from ipaddress import ip_address, IPv4Address, IPv6Address
 from socket import gethostbyname, gethostname, error as socket_error
 from requests import get, Response
 from typing import Optional, Union
-from re import findall, match
+from re import findall
 from platform import system
 
 import src.models as models
@@ -35,7 +35,7 @@ def get_ip_from_fqdn(fqdn: str) -> Optional[Union[IPv4Address, IPv6Address]]:
 
 
 def query_geolocation_info(
-    ip: Union[IPv4Address, IPv6Address],
+    ip: Union[IPv4Address, IPv6Address] = "",
 ) -> Optional[models.GeoLookupResponse]:
     """Query information about an IP address using an external API.
 
@@ -61,19 +61,6 @@ def get_host_ip() -> Optional[Union[IPv4Address, IPv6Address]]:
         return None
 
 
-def get_public_ip() -> Optional[Union[IPv4Address, IPv6Address]]:
-    """Get the public IP address of the current machine.
-
-    Returns:
-        Optional[Union[IPv4Address, IPv6Address]]: The public IPv4/v6 address, or None.
-    """
-    # TODO: Improve error handling
-    try:
-        return ip_address(get("https://api.ipify.org?format=json").json()["ip"])
-    except Exception as e:
-        return None
-
-
 def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
     """Parse windows traceroute output into a dictionary mapping IP addresses to latencies.
     Args:
@@ -83,12 +70,12 @@ def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
     """
     pattern = r"\s*(\d+)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+([\d\.]+)"
 
-    matches = findall(pattern, traceroute_output)
+    matches: list[list[str]] = findall(pattern, traceroute_output)
 
     traceroute = models.Traceroute()
-    for line in matches:
-        _, lat1, lat2, lat3, ip = line
-        latencies = [lat.rstrip(" ms") for lat in [lat1, lat2, lat3] if lat != "*"]
+    for match in matches:
+        _, lat1, lat2, lat3, ip = match
+        latencies = [int(lat.rstrip(" ms")) for lat in [lat1, lat2, lat3] if lat != "*"]
 
         traceroute.add_hop(
             models.Hop(
@@ -102,12 +89,12 @@ def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
     return traceroute
 
 
-def darwin_traceroute(traceroute_text: str) -> Optional[models.Traceroute]:
+def darwin_traceroute(traceroute_output: str) -> Optional[models.Traceroute]:
     # Regex pattern to extract the required information
     pattern = r"(\S+)\s+\((\d+\.\d+\.\d+\.\d+)\)\s+(\d+\.\d+|\*)\s+ms\s+(\d+\.\d+|\*)\s+ms\s+(\d+\.\d+|\*)\s*ms*"
 
     # Return all matches in the traceroute text (may be None)
-    matches = findall(pattern, traceroute_text)
+    matches: list[list[str]] = findall(pattern, traceroute_output)
 
     traceroute = models.Traceroute()
     for match in matches:

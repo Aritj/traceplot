@@ -64,23 +64,16 @@ def main(target: str) -> None:
         print("Invalid target IP or domain.")
         return
 
-    host_ip = tools.get_host_ip()
-    public_ip = tools.get_public_ip()
-    behind_nat = host_ip != public_ip
-
-    print(
-        f"Public IP (geolocation starting point): {public_ip}{' | Behind NAT' if behind_nat else ''}"
-    )
-
-    public_ip_info = tools.query_geolocation_info(public_ip)
+    public_ip_info = tools.query_geolocation_info()
     target_ip_info = tools.query_geolocation_info(target_ip)
+
     trace = execute_traceroute(target)
 
-    if not trace:
+    if trace.is_empty():
         print("An issue arose during the traceroute.")
         sys.exit()
 
-    print(trace)
+    trace.print_info()
 
     # If the target IP doesn't reply to trace route, append it to the end
     if not trace.contains_ip(target_ip):
@@ -95,14 +88,16 @@ def main(target: str) -> None:
 
     plots.plot_network(trace)
 
+    # Remove RFC1918 IPs
     private_hops = [hop for hop in trace.hops if hop.ip_addr.is_private]
     [trace.hops.remove(hop) for hop in private_hops]
 
+    # Include public IP as the "first hop" in the plot
     trace.insert_hop(
         0,
         models.Hop(
             fqdn=public_ip_info.fqdn,
-            ip_addr=public_ip,
+            ip_addr=public_ip_info.ip_addr,
             latencies=private_hops[0].latencies,
             geo_info=public_ip_info,
         ),
