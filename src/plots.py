@@ -129,5 +129,5 @@ def plot_public_ips(trace: models.Traceroute) -> None:
             for i, hop in enumerate(trace.hops)
         ]
     )
-    plt.title("Traceroute Hops (source: ipgeolocation.io)")
+    plt.title("Traceroute Hops (source: ipwho.is)")
     plt.show()

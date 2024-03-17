@@ -1,6 +1,6 @@
 from ipaddress import ip_address, IPv4Address, IPv6Address
 from socket import gethostbyname, gethostname, error as socket_error
-from requests import get, Response
+from requests import get
 from typing import Optional, Union
 from re import findall
 from platform import system
@@ -68,18 +68,27 @@ def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
     Returns:
         OrderedDict: Mapping from IP addresses to latency lists.
     """
-    pattern = r"\s*(\d+)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+([\d\.]+)"
-
+    # pattern = r"\s*(\d+)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+((?:[a-zA-Z0-9.-]+)?\s*\[?([\d\.]+)\]?)"
+    pattern = r"\s*(\d+)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+([a-zA-Z0-9.-]*(?: \[[\d\.]+\])?)"
     matches: list[list[str]] = findall(pattern, traceroute_output)
 
     traceroute = models.Traceroute()
     for match in matches:
-        _, lat1, lat2, lat3, ip = match
+        print(match)
+        _, lat1, lat2, lat3, fqdn_ip = match
+
+        # Extracting and cleaning FQDN and IP
+        if " [" in fqdn_ip:  # Checks if there is a DNS name and IP
+            fqdn, ip = fqdn_ip.split(" [")
+            ip = ip.rstrip("]")
+        else:  # Case with no DNS name, only IP
+            fqdn, ip = "", fqdn_ip
+
         latencies = [int(lat.rstrip(" ms")) for lat in [lat1, lat2, lat3] if lat != "*"]
 
         traceroute.add_hop(
             models.Hop(
-                fqdn="",
+                fqdn=fqdn,
                 ip_addr=ip_address(ip),
                 latencies=latencies,
                 geo_info=query_geolocation_info(ip),

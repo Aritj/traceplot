@@ -19,7 +19,7 @@ def execute_traceroute(ip: str) -> models.Traceroute:
     os_traceroute_dict = {
         "windows": {
             "handler": tools.parse_windows_traceroute,
-            "arguments": ["tracert", "-d", "-w", "1", ip],
+            "arguments": ["tracert", "-w", "1", ip],
             # TODO: implement with DNS names
         },
         "darwin": {
