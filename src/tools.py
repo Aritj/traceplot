@@ -68,7 +68,6 @@ def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
     Returns:
         OrderedDict: Mapping from IP addresses to latency lists.
     """
-    # pattern = r"\s*(\d+)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+((?:[a-zA-Z0-9.-]+)?\s*\[?([\d\.]+)\]?)"
     pattern = r"\s*(\d+)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+(\d+\sms|\*)\s+([a-zA-Z0-9.-]*(?: \[[\d\.]+\])?)"
     matches: list[list[str]] = findall(pattern, traceroute_output)
 
