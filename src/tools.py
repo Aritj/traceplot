@@ -73,8 +73,12 @@ def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
 
     traceroute = models.Traceroute()
     for match in matches:
-        print(match)
         _, lat1, lat2, lat3, fqdn_ip = match
+
+        latencies = [lat1, lat2, lat3]
+
+        if all(lat == "*" for lat in latencies):
+            continue
 
         # Extracting and cleaning FQDN and IP
         if " [" in fqdn_ip:  # Checks if there is a DNS name and IP
