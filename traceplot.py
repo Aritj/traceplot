@@ -96,7 +96,7 @@ def main(target: str) -> None:
     trace.insert_hop(
         0,
         models.Hop(
-            fqdn=public_ip_info.fqdn,
+            fqdn=f"{public_ip_info.fqdn} (Public IP)",
             ip_addr=public_ip_info.ip_addr,
             latencies=private_hops[0].latencies,
             geo_info=public_ip_info,

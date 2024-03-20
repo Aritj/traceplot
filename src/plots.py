@@ -2,6 +2,9 @@ import src.models as models
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import networkx as nx  # Import NetworkX for plotting network graphs
+import matplotlib.font_manager as font_manager
+
+font_prop = font_manager.FontProperties(family="monospace", size=10)
 
 
 def plot_network(trace: models.Traceroute) -> None:
@@ -67,7 +70,9 @@ def plot_network(trace: models.Traceroute) -> None:
         markerfacecolor="green",
         linestyle="None",
     )
-    plt.legend(handles=[private_legend, public_legend], loc="upper right")
+    plt.legend(
+        handles=[private_legend, public_legend], loc="upper right", prop=font_prop
+    )
 
     plt.axis("off")  # Turn off the axis
     plt.show()
@@ -77,7 +82,7 @@ def plot_public_ips(trace: models.Traceroute) -> None:
     """Plot public IP addresses on a world map.
 
     Args:
-        hop_coords (Dict[ipaddress.IPv4Address, Tuple[float, float]]): Dictionary mapping IP addresses to geographic coordinates.
+        trace (models.Traceroute): Traceroute which contains geographic coordinates.
     """
     projection = ccrs.PlateCarree()
     plt.figure(figsize=(15, 10))
@@ -125,9 +130,10 @@ def plot_public_ips(trace: models.Traceroute) -> None:
 
     ax.legend(
         [
-            f"{i+1}: {hop.fqdn} ({hop.ip_addr}) ({hop.geo_info.country_code} - {hop.geo_info.isp_name})"
+            f"{i+1}: {hop.geo_info.country_code:<3} - {hop.fqdn: <40} {'('+str(hop.ip_addr)+')':>17} - {hop.geo_info.isp_name} (AS{hop.geo_info.isp_asn})"
             for i, hop in enumerate(trace.hops)
-        ]
+        ],
+        prop=font_prop,
     )
     plt.title("Traceroute Hops (source: ipwho.is)")
     plt.show()

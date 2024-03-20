@@ -87,7 +87,7 @@ def parse_windows_traceroute(traceroute_output: str) -> models.Traceroute:
         else:  # Case with no DNS name, only IP
             fqdn, ip = "", fqdn_ip
 
-        latencies = [int(lat.rstrip(" ms")) for lat in [lat1, lat2, lat3] if lat != "*"]
+        latencies = [int(lat.rstrip(" ms")) for lat in latencies if lat != "*"]
 
         traceroute.add_hop(
             models.Hop(
@@ -112,11 +112,16 @@ def darwin_traceroute(traceroute_output: str) -> Optional[models.Traceroute]:
     for match in matches:
         fqdn, ip, lat1, lat2, lat3 = match
 
+        latencies = [lat1, lat2, lat3]
+
+        if all(lat == "*" for lat in latencies):
+            continue
+
         traceroute.add_hop(
             models.Hop(
                 fqdn=fqdn,
                 ip_addr=ip_address(ip),
-                latencies=[float(lat1), float(lat2), float(lat3)],
+                latencies=[float(lat) for lat in latencies],
                 geo_info=query_geolocation_info(ip),
             )
         )
