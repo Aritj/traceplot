@@ -130,7 +130,7 @@ def plot_public_ips(trace: models.Traceroute) -> None:
 
     ax.legend(
         [
-            f"{i+1}: {hop.geo_info.country_code:<3} - {hop.fqdn: <40} {'('+str(hop.ip_addr)+')':>17} - {hop.geo_info.isp_name} (AS{hop.geo_info.isp_asn})"
+            f"{i+1:>2}: {hop.geo_info.country_code:<3} - {hop.fqdn: <50} {'('+str(hop.ip_addr)+')':>17} - {hop.geo_info.isp_name} (AS{hop.geo_info.isp_asn})"
             for i, hop in enumerate(trace.hops)
         ],
         prop=font_prop,
